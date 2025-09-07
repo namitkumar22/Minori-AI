@@ -241,8 +241,132 @@ class StreamlitMain:
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            st.markdown(f"### 📹 Live Detection - {crop_type.title()}")
-            self.run_camera_detection(crop_type)
+            st.markdown(f"### 📸 Image Detection - {crop_type.title()}")
+            
+            # Check if running locally or on cloud
+            try:
+                # Try to access camera (will fail on Streamlit Cloud)
+                cap = cv2.VideoCapture(0)
+                if cap.isOpened():
+                    cap.release()
+                    # If camera is available, show camera option
+                    detection_mode = st.radio(
+                        "Choose detection mode:",
+                        ["📷 Upload Image", "🎥 Live Camera"],
+                        index=0
+                    )
+                    
+                    if detection_mode == "🎥 Live Camera":
+                        self.run_camera_detection_local(crop_type)
+                    else:
+                        self.run_image_upload_detection(crop_type)
+                else:
+                    # Camera not available, use image upload
+                    self.run_image_upload_detection(crop_type)
+            except:
+                # On Streamlit Cloud or camera not accessible
+                self.run_image_upload_detection(crop_type)
+    
+    def run_camera_detection_local(self, crop_type):
+        """Run local camera detection (for local development)"""
+        
+        # Create placeholders for dynamic content
+        camera_placeholder = st.empty()
+        detection_placeholder = st.empty()
+        solutions_placeholder = st.empty()
+        
+        # Control buttons
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            start_button = st.button("🎥 Start Camera", key="start_cam")
+        with col2:
+            stop_button = st.button("⏹️ Stop Camera", key="stop_cam")
+        with col3:
+            analyze_button = st.button("🔍 Analyze Current Frame", key="analyze_frame")
+        
+        if start_button:
+            st.session_state.camera_running = True
+        
+        if stop_button:
+            st.session_state.camera_running = False
+        
+        # Initialize camera
+        cap = None
+        if st.session_state.camera_running:
+            cap = cv2.VideoCapture(0)
+            
+            if not cap.isOpened():
+                st.error("❌ Could not open camera. Please check your camera connection.")
+                return
+            
+            st.success("📹 Camera is running...")
+        
+        # Main camera loop
+        current_frame = None
+        while st.session_state.camera_running and cap is not None:
+            ret, frame = cap.read()
+            if not ret:
+                st.error("Failed to capture frame")
+                break
+            
+            st.session_state.frame_count += 1
+            current_frame = frame.copy()
+            
+            # Draw detection box
+            display_frame = self.draw_detection_box(frame.copy())
+            
+            # Convert BGR to RGB for display
+            display_frame_rgb = cv2.cvtColor(display_frame, cv2.COLOR_BGR2RGB)
+            
+            # Display current frame
+            with camera_placeholder.container():
+                st.image(display_frame_rgb, channels="RGB", caption=f"Live Feed - Scanning {crop_type.title()}")
+            
+            # Auto-detect every 30 frames (reduce processing load)
+            if st.session_state.frame_count % 30 == 0:
+                with detection_placeholder.container():
+                    with st.spinner("🔍 Analyzing frame..."):
+                        disease = self.detect_disease_from_frame(frame, crop_type)
+                        if disease:
+                            st.success(f"🦠 Detected: **{disease}**")
+                            
+                            # Get solution
+                            solution_data = self.get_solution(crop_type, disease)
+                            if solution_data:
+                                with solutions_placeholder.container():
+                                    st.markdown("### 💡 Treatment Solution")
+                                    st.markdown(f"**Disease:** {disease}")
+                                    st.markdown(f"**Crop:** {crop_type.title()}")
+                                    st.markdown("**Recommended Treatment:**")
+                                    st.markdown(solution_data['answer'])
+                                    st.caption(f"Processing time: {solution_data['processing_time']:.2f} seconds")
+            
+            # Manual analysis button
+            if analyze_button and current_frame is not None:
+                with detection_placeholder.container():
+                    with st.spinner("🔍 Analyzing current frame..."):
+                        disease = self.detect_disease_from_frame(current_frame, crop_type)
+                        if disease:
+                            st.success(f"🦠 Detected: **{disease}**")
+                            
+                            # Get solution
+                            solution_data = self.get_solution(crop_type, disease)
+                            if solution_data:
+                                with solutions_placeholder.container():
+                                    st.markdown("### 💡 Treatment Solution")
+                                    st.markdown(f"**Disease:** {disease}")
+                                    st.markdown(f"**Crop:** {crop_type.title()}")
+                                    st.markdown("**Recommended Treatment:**")
+                                    st.markdown(solution_data['answer'])
+                                    st.caption(f"Processing time: {solution_data['processing_time']:.2f} seconds")
+            
+            # Small delay to prevent overwhelming the browser
+            time.sleep(0.1)
+        
+        # Cleanup
+        if cap is not None:
+            cap.release()
         
         with col2:
             self.display_previous_solutions()
