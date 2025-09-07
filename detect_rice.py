@@ -6,9 +6,9 @@ from tensorflow.keras.preprocessing import image
 
 class DetectRice():
     def __init__(self):
-        self.model = load_model("Backend\\Rice Disease Model and Classes\\rice_disease_model.h5", compile=False)
+        self.model = load_model("Rice Disease Model and Classes\\rice_disease_model.h5", compile=False)
 
-        with open("Backend\\Rice Disease Model and Classes\\rice_class_indices.pkl", "rb") as f:
+        with open("Rice Disease Model and Classes\\rice_class_indices.pkl", "rb") as f:
             class_indices = pickle.load(f)
 
         self.class_labels = list(class_indices.keys())

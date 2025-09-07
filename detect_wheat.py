@@ -6,9 +6,9 @@ from tensorflow.keras.preprocessing import image
 
 class DetectWheat():
     def __init__(self):
-        self.model = load_model("Backend\Wheat Disease Model and Classes\wheat_disease_model.h5")
+        self.model = load_model("Wheat Disease Model and Classes\\wheat_disease_model.h5")
 
-        with open("Backend\\Wheat Disease Model and Classes\\wheat_class_indices.pkl", "rb") as f:
+        with open("Wheat Disease Model and Classes\\wheat_class_indices.pkl", "rb") as f:
             class_indices = pickle.load(f)
 
         self.class_labels = list(class_indices.keys())
