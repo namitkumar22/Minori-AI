@@ -30,13 +30,13 @@ class GenerateSolution:
     def process_documents(self):
         try:
             self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-            if not os.path.exists("Backend\\Vectors"):
-                loader = PyPDFDirectoryLoader("Backend\Data")
+            if not os.path.exists("Vectors"):
+                loader = PyPDFDirectoryLoader("Data")
                 docs = loader.load()
                 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
                 final_documents = text_splitter.split_documents(docs[:])
                 self.vectors = FAISS.from_documents(final_documents, self.embeddings)
-                self.vectors.save_local("Backend\\Vectors")
+                self.vectors.save_local("Vectors")
                 
             return True
         except Exception as e:
@@ -49,7 +49,7 @@ class GenerateSolution:
             ("user", "Based on the following context, please provide information about the crop and disease. If the context does not contain relevant information, respond with 'I don't know'.\n\nContext: {context}\n\nQuestion: {input}")
         ])
         document_chain = create_stuff_documents_chain(self.llm, prompt)
-        vector_store = FAISS.load_local("Backend\\Vectors", self.embeddings, allow_dangerous_deserialization=True)
+        vector_store = FAISS.load_local("Vectors", self.embeddings, allow_dangerous_deserialization=True)
 
         retriever = vector_store.as_retriever()
 

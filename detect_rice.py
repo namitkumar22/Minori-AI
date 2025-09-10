@@ -1,3 +1,6 @@
+import os
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
 from tensorflow.keras.models import load_model
 import pickle
 import numpy as np
@@ -27,6 +30,3 @@ class DetectRice():
         print("Predicted:", predicted_class)
         return predicted_class
     
-
-obj = DetectRice()
-result = obj.detect_rice_disease("D:\\Namit Kumar\\Hackathons\\Project Exhibition 2025\\Minori AI\\Backend\\rice.jpg")

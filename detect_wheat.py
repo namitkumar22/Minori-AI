@@ -1,3 +1,7 @@
+import os
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
+
 from tensorflow.keras.models import load_model
 import pickle
 import numpy as np
@@ -27,6 +31,3 @@ class DetectWheat():
         print("Predicted:", predicted_class)
         return predicted_class
     
-
-obj = DetectWheat()
-result = obj.detect_wheat_disease("D:\\Namit Kumar\\Hackathons\\Project Exhibition 2025\\Minori AI\\Backend\\rice.jpg")

@@ -1,4 +1,4 @@
 .env
-rice.jpg
 __pycache__/
 .dist/
+myenv/
