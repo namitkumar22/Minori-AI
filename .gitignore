@@ -2,3 +2,8 @@
 __pycache__/
 .dist/
 myenv/
+build
+main.spec
+.gitignore
+icon.ico
+dist/
