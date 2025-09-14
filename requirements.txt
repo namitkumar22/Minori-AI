@@ -16,3 +16,5 @@ scikit-learn
 google-generativeai
 tk
 streamlit
+sentence-transformer
+tf-keras
